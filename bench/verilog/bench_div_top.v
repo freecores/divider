@@ -34,16 +34,19 @@
 
 //  CVS Log
 //
-//  $Id: bench_div_top.v,v 1.1.1.1 2002-10-29 20:29:08 rherveille Exp $
+//  $Id: bench_div_top.v,v 1.2 2002-10-31 13:53:55 rherveille Exp $
 //
-//  $Date: 2002-10-29 20:29:08 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-31 13:53:55 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.1.1.1  2002/10/29 20:29:08  rherveille
+//
+//
 //               Revision 1.1.1.1  2002/03/26 07:25:12  rherveille
 //               First upload
 //
@@ -74,7 +77,8 @@ module bench_div_top();
 
 	integer sr, qr;
 
-	wire [d_width :0] s, q;
+	wire [d_width   :0] s;
+	wire [d_width   :0] q;
 	wire div0, ovf;
 	reg  [d_width :0] sc, qc;
 
@@ -96,68 +100,68 @@ module bench_div_top();
 
 	always #2.5 clk <= ~clk;
 
-	always@(posedge clk)
-		for(n=1; n<=pipeline-1; n=n+1)
-		begin
-			dz[n] <= #1 dz[n-1];
-			dd[n] <= #1 dd[n-1];
-		end
+	always @(posedge clk)
+	  for(n=1; n<=pipeline-1; n=n+1)
+	     begin
+	         dz[n] <= #1 dz[n-1];
+	         dd[n] <= #1 dd[n-1];
+	     end
 
 	initial
 	begin
-		$display("*");
-		$display("* Starting testbench");
-		$display("*");
-		err_cnt = 0;
+	    $display("*");
+	    $display("* Starting testbench");
+	    $display("*");
+	    err_cnt = 0;
 
-		clk = 0; // start with low-level clock
+	    clk = 0; // start with low-level clock
 
-		// wait a while
-		@(posedge clk);
+	    // wait a while
+	    @(posedge clk);
 
-		// present data
-		for(z=-(1<<(z_width -1)); z < 1<<(z_width -1); z=z+1)
-		for(d=0; d< 1<<(z_width/2); d=d+1)
-		begin
-			zi <= z;
-			di <= d;
+	    // present data
+	    for(z=-(1<<(z_width -1)); z < 1<<(z_width -1); z=z+1)
+	    for(d=0; d< 1<<(z_width/2); d=d+1)
+	    begin
+	        zi <= z;
+	        di <= d;
 
-			dz[0] <= z;
-			dd[0] <= d;
+	        dz[0] <= z;
+	        dd[0] <= d;
 
-			qr = dz[pipeline-1] / dd[pipeline-1];
-			qc = qr;
-			sr = dz[pipeline-1] - (dd[pipeline-1] * qc);
-			sc = sr;
+	        qr = dz[pipeline-1] / dd[pipeline-1];
+	        qc = qr;
+	        sr = dz[pipeline-1] - (dd[pipeline-1] * qc);
+	        sc = sr;
 
-			if (!ovf)
-				if ( (qc !== q) || (sc !== s) )
-				begin
-					$display("Result error (z/d=%d/%d). Received (q,s) = (%d,%d), expected (%d,%d)",
-						dz[pipeline-1], dd[pipeline-1], q, s, qc, sc);
+	        if(!ovf)
+	          if ( (qc !== q) || (sc !== s) )
+	            begin
+	                $display("Result error (z/d=%d/%d). Received (q,s) = (%d,%d), expected (%d,%d)",
+	                         dz[pipeline-1], dd[pipeline-1], q, s, qc, sc);
 
-					err_cnt = err_cnt +1;
-				end
+	                err_cnt = err_cnt +1;
+	            end
 
-			if (show_div0)
-				if (div0)
-						$display("Division by zero (z/d=%d/%d)", dz[pipeline-1], dd[pipeline-1]);
+	          if(show_div0)
+	            if(div0)
+	              $display("Division by zero (z/d=%0d/%0d)", dz[pipeline-1], dd[pipeline-1]);
 
-			if (show_ovf)
-				if (ovf)
-						$display("Overflow (z/d=%d/%d)", dz[pipeline-1], dd[pipeline-1]);
+	          if(show_ovf)
+	            if(ovf)
+	              $display("Overflow (z/d=%0d/%0d)", dz[pipeline-1], dd[pipeline-1]);
 
-			@(posedge clk);
-		end
+	          @(posedge clk);
+	    end
 
-		// wait a while
-		repeat(20) @(posedge clk);
+	    // wait a while
+	    repeat(20) @(posedge clk);
 
-		$display("*");
-		$display("* Testbench ended. Total errors = %d", err_cnt);
-		$display("*");
+	    $display("*");
+	    $display("* Testbench ended. Total errors = %d", err_cnt);
+	    $display("*");
 
-		$stop;
+	    $stop;
 	end
 
 endmodule
