@@ -34,16 +34,19 @@
 
 //  CVS Log
 //
-//  $Id: bench_div_top.v,v 1.2 2002-10-31 13:53:55 rherveille Exp $
+//  $Id: bench_div_top.v,v 1.3 2003-09-17 13:09:23 rherveille Exp $
 //
-//  $Date: 2002-10-31 13:53:55 $
-//  $Revision: 1.2 $
+//  $Date: 2003-09-17 13:09:23 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/31 13:53:55  rherveille
+//               Modified testbench. Fixed a bug in the remainder output size of div_su.v
+//
 //               Revision 1.1.1.1  2002/10/29 20:29:08  rherveille
 //
 //
@@ -56,10 +59,10 @@
 
 module bench_div_top();
 
-	parameter z_width = 8;
+	parameter z_width = 16;
 	parameter d_width = z_width /2;
 
-	parameter pipeline = 8;
+	parameter pipeline = d_width +4;
 
 	parameter show_div0 = 0;
 	parameter show_ovf  = 0;
@@ -70,10 +73,10 @@ module bench_div_top();
 	reg clk;
 
 	integer z, d, n;
-	integer dz [pipeline-1:0];
-	integer dd [pipeline-1:0];
-	reg [d_width -1:0] di;
-	reg [z_width -1:0] zi;
+	integer dz [pipeline:1];
+	integer dd [pipeline:1];
+	reg [d_width:1] di;
+	reg [z_width:1] zi;
 
 	integer sr, qr;
 
@@ -82,7 +85,17 @@ module bench_div_top();
 	wire div0, ovf;
 	reg  [d_width :0] sc, qc;
 
-	reg err_cnt;
+	integer err_cnt;
+
+	function integer twos;
+		input [d_width:1] d;
+	begin
+	  if(d[d_width])
+	    twos = -(~d[d_width:1] +1);
+	  else
+	    twos = d[d_width:1];
+	end
+	endfunction
 
 	//
 	// hookup division unit
@@ -101,7 +114,7 @@ module bench_div_top();
 	always #2.5 clk <= ~clk;
 
 	always @(posedge clk)
-	  for(n=1; n<=pipeline-1; n=n+1)
+	  for(n=2; n<=pipeline; n=n+1)
 	     begin
 	         dz[n] <= #1 dz[n-1];
 	         dd[n] <= #1 dd[n-1];
@@ -112,6 +125,13 @@ module bench_div_top();
 	    $display("*");
 	    $display("* Starting testbench");
 	    $display("*");
+
+`ifdef WAVES
+   $shm_open("waves");
+   $shm_probe("AS",bench_div_top,"AS");
+   $display("INFO: Signal dump enabled ...\n\n");
+`endif
+
 	    err_cnt = 0;
 
 	    clk = 0; // start with low-level clock
@@ -123,33 +143,31 @@ module bench_div_top();
 	    for(z=-(1<<(z_width -1)); z < 1<<(z_width -1); z=z+1)
 	    for(d=0; d< 1<<(z_width/2); d=d+1)
 	    begin
-	        zi <= z;
-	        di <= d;
+	        zi <= #1 z;
+	        di <= #1 d;
 
-	        dz[0] <= z;
-	        dd[0] <= d;
+	        dz[1] <= #1 z;
+	        dd[1] <= #1 d;
 
-	        qr = dz[pipeline-1] / dd[pipeline-1];
-	        qc = qr;
-	        sr = dz[pipeline-1] - (dd[pipeline-1] * qc);
-	        sc = sr;
+	        qc = dz[pipeline] / dd[pipeline];
+	        sc = dz[pipeline] - (dd[pipeline] * (dz[pipeline]/dd[pipeline]));
 
-	        if(!ovf)
+	        if(!ovf && !div0)
 	          if ( (qc !== q) || (sc !== s) )
 	            begin
-	                $display("Result error (z/d=%d/%d). Received (q,s) = (%d,%d), expected (%d,%d)",
-	                         dz[pipeline-1], dd[pipeline-1], q, s, qc, sc);
+	                $display("Result error (z/d=%0d/%0d). Received (q,s) = (%0d,%0d), expected (%0d,%0d)",
+	                         dz[pipeline], dd[pipeline], twos(q), s, twos(qc), sc);
 
 	                err_cnt = err_cnt +1;
 	            end
 
 	          if(show_div0)
 	            if(div0)
-	              $display("Division by zero (z/d=%0d/%0d)", dz[pipeline-1], dd[pipeline-1]);
+	              $display("Division by zero (z/d=%0d/%0d)", dz[pipeline], dd[pipeline]);
 
 	          if(show_ovf)
 	            if(ovf)
-	              $display("Overflow (z/d=%0d/%0d)", dz[pipeline-1], dd[pipeline-1]);
+	              $display("Overflow (z/d=%0d/%0d)", dz[pipeline], dd[pipeline]);
 
 	          @(posedge clk);
 	    end

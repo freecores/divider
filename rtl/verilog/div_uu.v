@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////
 ////                                                             ////
-////  Non-restoring unsinged divider                             ////
+////  Non-restoring unsigned divider                             ////
 ////                                                             ////
 ////  Author: Richard Herveille                                  ////
 ////          richard@asics.ws                                   ////
@@ -34,16 +34,19 @@
 
 //  CVS Log
 //
-//  $Id: div_uu.v,v 1.2 2002-10-31 13:54:58 rherveille Exp $
+//  $Id: div_uu.v,v 1.3 2003-09-17 13:08:53 rherveille Exp $
 //
-//  $Date: 2002-10-31 13:54:58 $
-//  $Revision: 1.2 $
+//  $Date: 2003-09-17 13:08:53 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/31 13:54:58  rherveille
+//               Fixed a bug in the remainder output of div_su.v
+//
 //               Revision 1.1.1.1  2002/10/29 20:29:10  rherveille
 //
 //
@@ -110,7 +113,7 @@ module div_uu(clk, ena, z, d, q, s, div0, ovf);
 	  else
 	    tmp = si;
 
-	  assign_s = tmp[z_width-1:z_width-4];
+	  assign_s = tmp[z_width-1:z_width-d_width];
 	end
 	endfunction
 
