@@ -35,16 +35,19 @@
 
 //  CVS Log
 //
-//  $Id: div_su.v,v 1.1.1.1 2002-10-29 20:29:09 rherveille Exp $
+//  $Id: div_su.v,v 1.2 2002-10-31 13:54:58 rherveille Exp $
 //
-//  $Date: 2002-10-29 20:29:09 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-31 13:54:58 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.1.1.1  2002/10/29 20:29:09  rherveille
+//
+//
 //
 
 //synopsys translate_off
@@ -68,12 +71,11 @@ module div_su(clk, ena, z, d, q, s, div0, ovf);
 	input  [z_width-1:0] z; // divident
 	input  [d_width-1:0] d; // divisor
 	output [d_width  :0] q; // quotient
-	output [d_width-1:0] s; // remainder
+	output [d_width  :0] s; // remainder
 	output div0;
 	output ovf;
 
-	reg [d_width :0] q;
-	reg [d_width-1:0] s;
+	reg [d_width:0] q, s;
 	reg div0;
 	reg ovf;
 

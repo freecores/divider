@@ -34,16 +34,19 @@
 
 //  CVS Log
 //
-//  $Id: div_uu.v,v 1.1.1.1 2002-10-29 20:29:10 rherveille Exp $
+//  $Id: div_uu.v,v 1.2 2002-10-31 13:54:58 rherveille Exp $
 //
-//  $Date: 2002-10-29 20:29:10 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-31 13:54:58 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.1.1.1  2002/10/29 20:29:10  rherveille
+//
+//
 //
 
 //synopsys translate_off
@@ -67,12 +70,12 @@ module div_uu(clk, ena, z, d, q, s, div0, ovf);
 	input  [z_width -1:0] z; // divident
 	input  [d_width -1:0] d; // divisor
 	output [d_width -1:0] q; // quotient
-	reg [d_width-1:0] q;
 	output [d_width -1:0] s; // remainder
-	reg [d_width-1:0] s;
 	output div0;
-	reg div0;
 	output ovf;
+	reg [d_width-1:0] q;
+	reg [d_width-1:0] s;
+	reg div0;
 	reg ovf;
 
 	//	
